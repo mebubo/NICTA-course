@@ -75,8 +75,8 @@ headOr ::
   a
   -> List a
   -> a
-headOr x Nil = x
-headOr _ (h :. _) = h
+headOr =
+  foldRight const
 
 -- | The product of the elements of a list.
 --
@@ -89,7 +89,7 @@ product ::
   List Int
   -> Int
 product =
-  foldRight (*) 1
+  foldLeft (*) 1
 
 -- | Sum the elements of the list.
 --
@@ -104,7 +104,7 @@ sum ::
   List Int
   -> Int
 sum =
-  foldRight (+) 0
+  foldLeft (+) 0
 
 -- | Return the length of the list.
 --
@@ -116,7 +116,7 @@ length ::
   List a
   -> Int
 length =
-  foldRight (\_ b -> b + 1) 0
+  foldLeft (const . succ) 0
 
 -- | Map the given function on each element of the list.
 --
@@ -148,7 +148,7 @@ filter ::
   -> List a
   -> List a
 filter p =
-  foldRight (\h t -> if p h then h :. t else t) Nil
+  foldRight (\h -> if p h then (h:.) else id) Nil
 
 -- | Append two lists to a new list.
 --
@@ -166,8 +166,8 @@ filter p =
   List a
   -> List a
   -> List a
-(++) a b =
-  foldRight (:.) b a
+(++) =
+  flip (foldRight (:.))
 
 infixr 5 ++
 
@@ -240,11 +240,7 @@ seqOptional ::
   List (Optional a)
   -> Optional (List a)
 seqOptional =
-  foldRight combine (Full Nil)
-  where
-    combine Empty _ = Empty
-    combine _ Empty = Empty
-    combine (Full x) (Full xs) = Full (x:.xs)
+  foldRight (twiceOptional (:.)) (Full Nil)
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -269,7 +265,7 @@ find ::
 find p xs =
   case filter p xs of
     Nil -> Empty
-    (x:._) -> Full x
+    x:._ -> Full x
 
 -- | Determine if the length of the given list is greater than 4.
 --
@@ -319,7 +315,7 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce f a = a :. (produce f (f a))
+produce f a = a :. produce f (f a)
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?
