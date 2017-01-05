@@ -62,7 +62,7 @@ infixl 4 <*>
   -> f a
   -> f b
 (<$>) =
-  error "todo: Course.Applicative#(<$>)"
+  (<*>) . pure
 
 -- | Insert into Id.
 --
@@ -75,13 +75,13 @@ instance Applicative Id where
     a
     -> Id a
   pure =
-    error "todo: Course.Applicative pure#instance Id"
-  (<*>) :: 
+    Id
+  (<*>) ::
     Id (a -> b)
     -> Id a
     -> Id b
   (<*>) =
-    error "todo: Course.Applicative (<*>)#instance Id"
+    mapId . runId
 
 -- | Insert into a List.
 --
@@ -94,13 +94,14 @@ instance Applicative List where
     a
     -> List a
   pure =
-    error "todo: Course.Applicative pure#instance List"
+    (:. Nil)
   (<*>) ::
     List (a -> b)
     -> List a
     -> List b
-  (<*>) =
-    error "todo: Course.Apply (<*>)#instance List"
+  fs <*> as =
+    flatMap g fs
+      where g f = map f as
 
 -- | Insert into an Optional.
 --
@@ -119,7 +120,7 @@ instance Applicative Optional where
     a
     -> Optional a
   pure =
-    error "todo: Course.Applicative pure#instance Optional"
+    Full
   (<*>) ::
     Optional (a -> b)
     -> Optional a
