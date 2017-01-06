@@ -277,8 +277,8 @@ lift4 f a b c d =
   f a
   -> f b
   -> f b
-(*>) =
-  flip (<*)
+fa *> fb =
+ flip const <$> fa <*> fb
 
 
 -- | Apply, discarding the value of the second argument.
@@ -328,7 +328,7 @@ sequence ::
   List (f a)
   -> f (List a)
 sequence =
-  error "todo: Course.Applicative#sequence"
+  foldRight (lift2 (:.)) (pure Nil)
 
 -- | Replicate an effect a given number of times.
 --
@@ -351,8 +351,8 @@ replicateA ::
   Int
   -> f a
   -> f (List a)
-replicateA =
-  error "todo: Course.Applicative#replicateA"
+replicateA n fa =
+  sequence (replicate n fa)
 
 -- | Filter a list with a predicate that produces an effect.
 --
@@ -379,8 +379,9 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering =
-  error "todo: Course.Applicative#filtering"
+filtering p =
+  foldRight (\a fas -> lift2 (\b as -> if b then a :. as else as) (p a) fas) (pure Nil)
+
 
 -----------------------
 -- SUPPORT LIBRARIES --
