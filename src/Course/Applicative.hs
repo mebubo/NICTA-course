@@ -80,8 +80,8 @@ instance Applicative Id where
     Id (a -> b)
     -> Id a
     -> Id b
-  (<*>) =
-    mapId . runId
+  Id f <*> Id a =
+    Id (f a)
 
 -- | Insert into a List.
 --
@@ -100,8 +100,7 @@ instance Applicative List where
     -> List a
     -> List b
   fs <*> as =
-    flatMap g fs
-      where g f = map f as
+    flatMap (`map` as) fs
 
 -- | Insert into an Optional.
 --
@@ -126,7 +125,7 @@ instance Applicative Optional where
     -> Optional a
     -> Optional b
   f <*> a =
-    bindOptional (\f' -> mapOptional (\a' -> f' a') a) f
+    bindOptional (`mapOptional` a) f
 
 -- | Insert into a constant function.
 --
@@ -219,7 +218,7 @@ lift3 ::
   -> f c
   -> f d
 lift3 f a b c =
-  f <$> a <*> b <*> c
+  lift2 f a b <*> c
 
 -- | Apply a quaternary function in the environment.
 --
@@ -252,7 +251,7 @@ lift4 ::
   -> f d
   -> f e
 lift4 f a b c d =
-  f <$> a <*> b <*> c <*> d
+  lift3 f a b c <*> d
 
 -- | Apply, discarding the value of the first argument.
 -- Pronounced, right apply.
@@ -277,8 +276,8 @@ lift4 f a b c d =
   f a
   -> f b
   -> f b
-fa *> fb =
- flip const <$> fa <*> fb
+(*>) =
+ lift2 (const id)
 
 
 -- | Apply, discarding the value of the second argument.
@@ -304,8 +303,8 @@ fa *> fb =
   f b
   -> f a
   -> f b
-fb <* fa =
-  const <$> fb <*> fa
+(<*) =
+  lift2 const
 
 -- | Sequences a list of structures to a structure of list.
 --
@@ -351,8 +350,8 @@ replicateA ::
   Int
   -> f a
   -> f (List a)
-replicateA n fa =
-  sequence (replicate n fa)
+replicateA n =
+  sequence . replicate n
 
 -- | Filter a list with a predicate that produces an effect.
 --
@@ -380,7 +379,7 @@ filtering ::
   -> List a
   -> f (List a)
 filtering p =
-  foldRight (\a fas -> lift2 (\b as -> if b then a :. as else as) (p a) fas) (pure Nil)
+  foldRight (\a -> lift2 (\b -> if b then (a:.) else id) (p a)) (pure Nil)
 
 
 -----------------------
