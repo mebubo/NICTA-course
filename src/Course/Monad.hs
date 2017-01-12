@@ -68,8 +68,8 @@ infixr 1 =<<
   f (a -> b)
   -> f a
   -> f b
-fab <*> fa =
-  (\ab -> ((\a -> return (ab a)) =<< fa)) =<< fab
+f <*> a =
+  (\f' -> return . f' =<< a) =<< f
 
 infixl 4 <*>
 
@@ -168,8 +168,8 @@ infixl 1 >>=
   -> (a -> f b)
   -> a
   -> f c
-(<=<) fc fb a =
-  (fb a) >>= fc
+(<=<) fc fb =
+  (fc =<<) . fb
 
 infixr 1 <=<
 
