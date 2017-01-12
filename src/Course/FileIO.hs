@@ -52,7 +52,7 @@ To test this module, load ghci in the root of the project directory, and do
 Example output:
 
 $ ghci
-GHCi, version ... 
+GHCi, version ...
 Loading package...
 Loading ...
 [ 1 of 28] Compiling (etc...
@@ -73,8 +73,16 @@ the contents of c
 -- /Tip:/ use @getArgs@ and @run@
 main ::
   IO ()
-main =
-  error "todo: Course.FileIO#main"
+main = do
+  filename <- headOr "" <$> getArgs
+  filenames <- lines <$> readFile filename
+  void $ sequence $ map printFile filenames
+  where
+    printFile :: Chars -> IO ()
+    printFile name = do
+      putStrLn $ "============ " ++ name
+      ls <- lines <$> readFile name
+      void $ sequence $ putStrLn <$> ls
 
 type FilePath =
   Chars
