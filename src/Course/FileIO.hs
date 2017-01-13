@@ -94,7 +94,7 @@ getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
 getFiles =
-  sequence . (getFile <$>)
+  sequence . (<$>) getFile
 
 getFile ::
   FilePath
@@ -108,7 +108,7 @@ printFiles ::
   List (FilePath, Chars)
   -> IO ()
 printFiles =
-  void . sequence . ((\(a, b) -> printFile a b) <$>)
+  void . sequence . (<$>) (uncurry printFile)
 
 printFile ::
   FilePath
