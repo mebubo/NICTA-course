@@ -75,14 +75,7 @@ main ::
   IO ()
 main = do
   filename <- headOr "" <$> getArgs
-  filenames <- lines <$> readFile filename
-  void $ sequence $ map printFile filenames
-  where
-    printFile :: Chars -> IO ()
-    printFile name = do
-      putStrLn $ "============ " ++ name
-      ls <- lines <$> readFile name
-      void $ sequence $ putStrLn <$> ls
+  run filename
 
 type FilePath =
   Chars
@@ -91,31 +84,38 @@ type FilePath =
 run ::
   Chars
   -> IO ()
-run =
-  error "todo: Course.FileIO#run"
+run filename =
+  do
+    content <- readFile filename
+    files <- getFiles (lines content)
+    printFiles files
 
 getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
 getFiles =
-  error "todo: Course.FileIO#getFiles"
+  sequence . (getFile <$>)
 
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
-getFile =
-  error "todo: Course.FileIO#getFile"
+getFile filepath =
+  do
+    content <- readFile filepath
+    return (filepath, content)
 
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
 printFiles =
-  error "todo: Course.FileIO#printFiles"
+  void . sequence . ((\(a, b) -> printFile a b) <$>)
 
 printFile ::
   FilePath
   -> Chars
   -> IO ()
-printFile =
-  error "todo: Course.FileIO#printFile"
+printFile name content =
+  do
+    putStrLn $ "============" ++ name
+    putStrLn content
 
