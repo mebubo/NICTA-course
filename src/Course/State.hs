@@ -99,8 +99,8 @@ exec ::
   State s a
   -> s
   -> s
-exec (State a) s =
-  snd $ a s
+exec (State a) =
+  snd . a
 
 -- | Run the `State` seeded with `s` and retrieve the resulting value.
 --
@@ -150,8 +150,11 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM =
-  error "todo: Course.State#findM"
+findM p as =
+  headToOptional <$> filtering p as
+  where
+    headToOptional (y:._) = Full y
+    headToOptional _ = Empty
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
