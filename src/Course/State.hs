@@ -150,11 +150,16 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM p as =
-  headToOptional <$> filtering p as
-  where
-    headToOptional (y:._) = Full y
-    headToOptional _ = Empty
+findM _ Nil =
+  pure Empty
+findM p (h:.t) =
+  (\a -> if a then pure (Full h) else findM p t) =<< p h
+
+-- findM p as =
+--   headToOptional <$> filtering p as
+--   where
+--     headToOptional (y:._) = Full y
+--     headToOptional _ = Empty
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
@@ -167,8 +172,11 @@ firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat =
-  error "todo: Course.State#firstRepeat"
+firstRepeat as =
+  eval (findM check as) S.empty
+
+check :: Ord a => a -> State (S.Set a) Bool
+check a = State $ \s -> (a `S.member` s, a `S.insert` s)
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -180,8 +188,10 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct =
-  error "todo: Course.State#distinct"
+distinct as =
+  eval (filtering check2 as) S.empty
+  where
+    check2 x = not <$> check x
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
