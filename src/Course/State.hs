@@ -218,4 +218,10 @@ isHappy ::
   Integer
   -> Bool
 isHappy =
-  error "todo: Course.State#isHappy"
+  contains 1 . firstRepeat . produce step
+
+step :: Integer -> Integer
+step = toInteger . sum . map step2 . show'
+
+step2 :: Char -> Int
+step2 = (\x -> x * x) . digitToInt
