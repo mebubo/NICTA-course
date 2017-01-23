@@ -89,8 +89,7 @@ instance Monad (State s) where
     State $ \s ->
       let
         (a', s') = a s
-        State b = f a'
-      in b s'
+      in runState (f a') s'
 
 -- | Run the `State` seeded with `s` and retrieve the resulting state.
 --
@@ -128,8 +127,8 @@ get =
 put ::
   s
   -> State s ()
-put x =
-  State $ \_ -> ((), x)
+put =
+  State . const . ((,) ())
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.
@@ -221,7 +220,4 @@ isHappy =
   contains 1 . firstRepeat . produce step
 
 step :: Integer -> Integer
-step = toInteger . sum . map step2 . show'
-
-step2 :: Char -> Int
-step2 = (\x -> x * x) . digitToInt
+step = toInteger . sum . map (join (*) . digitToInt) . show'
