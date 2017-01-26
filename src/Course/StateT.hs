@@ -99,8 +99,8 @@ type State' s a =
 state' ::
   (s -> (a, s))
   -> State' s a
-state' =
-  error "todo: Course.StateT#state'"
+state' f =
+  StateT $ \s -> Id (f s)
 
 -- | Provide an unwrapper for `State'` values.
 --
@@ -110,8 +110,8 @@ runState' ::
   State' s a
   -> s
   -> (a, s)
-runState' =
-  error "todo: Course.StateT#runState'"
+runState' (StateT st) s =
+  runId $ st s
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting state.
 execT ::
@@ -119,16 +119,16 @@ execT ::
   StateT s f a
   -> s
   -> f s
-execT =
-  error "todo: Course.StateT#execT"
+execT (StateT st) s =
+  snd <$> st s
 
 -- | Run the `State` seeded with `s` and retrieve the resulting state.
 exec' ::
   State' s a
   -> s
   -> s
-exec' =
-  error "todo: Course.StateT#exec'"
+exec' st =
+  snd . runState' st
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting value.
 evalT ::
@@ -136,16 +136,16 @@ evalT ::
   StateT s f a
   -> s
   -> f a
-evalT =
-  error "todo: Course.StateT#evalT"
+evalT (StateT st) =
+  (<$>) fst . st
 
 -- | Run the `State` seeded with `s` and retrieve the resulting value.
 eval' ::
   State' s a
   -> s
   -> a
-eval' =
-  error "todo: Course.StateT#eval'"
+eval' st =
+  runId . evalT st
 
 -- | A `StateT` where the state also distributes into the produced value.
 --
@@ -155,7 +155,7 @@ getT ::
   Monad f =>
   StateT s f s
 getT =
-  error "todo: Course.StateT#getT"
+  StateT $ \s -> pure (s, s)
 
 -- | A `StateT` where the resulting state is seeded with the given value.
 --
@@ -168,8 +168,8 @@ putT ::
   Monad f =>
   s
   -> StateT s f ()
-putT =
-  error "todo: Course.StateT#putT"
+putT s =
+  StateT $ \_ -> pure ((), s)
 
 -- | Remove all duplicate elements in a `List`.
 --
@@ -180,8 +180,11 @@ distinct' ::
   (Ord a, Num a) =>
   List a
   -> List a
-distinct' =
-  error "todo: Course.StateT#distinct'"
+distinct' as =
+  eval' (filtering f as) S.empty
+    where
+      f :: Ord a => a -> State' (S.Set a) Bool
+      f a = state' $ \s -> (a `S.member` s, a `S.insert` s)
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
@@ -198,8 +201,12 @@ distinctF ::
   (Ord a, Num a) =>
   List a
   -> Optional (List a)
-distinctF =
-  error "todo: Course.StateT#distinctF"
+distinctF as =
+  evalT (filtering f as) S.empty
+  where
+    f :: (Ord a, Num a) => a -> StateT (S.Set a) Optional Bool
+    f a = StateT $ \s -> if a > 100 then Empty
+      else Full (not $ a `S.member` s, a `S.insert` s)
 
 -- | An `OptionalT` is a functor of an `Optional` value.
 data OptionalT f a =
