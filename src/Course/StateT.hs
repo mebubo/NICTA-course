@@ -184,7 +184,7 @@ distinct' as =
   eval' (filtering f as) S.empty
     where
       f :: Ord a => a -> State' (S.Set a) Bool
-      f a = state' $ \s -> (a `S.member` s, a `S.insert` s)
+      f a = state' $ \s -> (a `S.notMember` s, a `S.insert` s)
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
@@ -322,8 +322,8 @@ distinctG xs =
       f a = StateT $ \s -> OptionalT $
         if a > 100
           then
-            log1 (fromString $ "aborting > 100:" P.++ show a) Empty
+            log1 (fromString $ "aborting > 100: " P.++ show a) Empty
           else
             (if even a
-              then log1 (fromString $ "even number" P.++ show a)
+              then log1 (fromString $ "even number: " P.++ show a)
               else pure) (Full (a `S.notMember` s, a `S.insert` s))
