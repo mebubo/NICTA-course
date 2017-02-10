@@ -26,10 +26,10 @@ instance (Applicative f, Applicative g) =>
     Compose .  pure . pure
 -- Implement the (<*>) function for an Applicative instance for Compose
   Compose f <*> Compose a =
-    Compose $ lift2 (\f' a' -> f' <*> a') f a
+    Compose $ lift2 (<*>) f a
 
 instance (Monad f, Monad g) =>
   Monad (Compose f g) where
 -- Implement the (=<<) function for a Monad instance for Compose
   (=<<) =
-    error "todo: Course.Compose (<<=)#instance (Compose f g)"
+    error "impossible"
