@@ -290,7 +290,7 @@ findRight ::
 findRight p (ListZipper l a r) =
   case break p r of
     (_, Nil) -> IsNotZ
-    (l', x:r') -> IsZ $ ListZipper (reverse l' ++ x :. l) x r'
+    (l', x:.r') -> IsZ $ ListZipper (reverse l' ++ x :. l) x r'
 
 -- | Move the zipper left, or if there are no elements to the left, go to the far right.
 --
@@ -302,8 +302,9 @@ findRight p (ListZipper l a r) =
 moveLeftLoop ::
   ListZipper a
   -> ListZipper a
-moveLeftLoop =
-  error "todo: Course.ListZipper#moveLeftLoop"
+moveLeftLoop (ListZipper (l :. ls) x rs) = ListZipper ls l (x :. rs)
+moveLeftLoop (ListZipper Nil x rs) = ListZipper ls x' Nil
+  where x' :. ls = reverse $ x :. rs
 
 -- | Move the zipper right, or if there are no elements to the right, go to the far left.
 --
