@@ -262,9 +262,9 @@ jsonObject =
 jsonValue ::
   Parser JsonValue
 jsonValue =
-  spaces *> (jsonNull *> pure JsonNull
-    ||| jsonTrue *> pure JsonTrue
-    ||| jsonFalse *> pure JsonFalse
+  spaces *> (JsonNull <$ jsonNull
+    ||| JsonTrue <$ jsonTrue
+    ||| JsonFalse <$ jsonFalse
     ||| JsonArray <$> jsonArray
     ||| JsonObject <$> jsonObject
     ||| JsonString <$> jsonString
